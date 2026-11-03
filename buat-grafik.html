@@ -1,0 +1,403 @@
+
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JATIDIRI TERPUJI 4K ASSET GENERATOR</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:20px;background:#071426;color:white;font-family:Arial;text-align:center}
+h2{color:#ffda75}
+p{line-height:1.6;color:#c9d8ef}
+button{padding:17px 22px;border:0;border-radius:12px;background:linear-gradient(135deg,#fff0a0,#e3a329);font-weight:bold;font-size:16px}
+canvas{width:100%;max-width:700px;height:auto;border:2px solid #d8b45a;margin:15px 0}
+</style>
+</head>
+<body>
+<h2>JATIDIRI TERPUJI</h2>
+<p>PREMIUM 4K GRAPHIC SPRITE ATLAS<br>4096 × 4096 • 64 ASSETS • PNG</p>
+<canvas id="preview" width="1024" height="1024"></canvas>
+<br>
+<button onclick="download()">MUAT TURUN GAME-ASSETS.PNG</button>
+<p id="status">Grafik 4K sedang disediakan...</p>
+
+<script>
+"use strict";
+
+const SIZE=4096,CELL=512,GRID=8;
+const canvas=document.createElement("canvas");
+canvas.width=SIZE;
+canvas.height=SIZE;
+const c=canvas.getContext("2d");
+
+function gradient(x,y,w,h,colors){
+ let g=c.createLinearGradient(x,y,x+w,y+h);
+ colors.forEach((v,i)=>g.addColorStop(i/(colors.length-1),v));
+ return g;
+}
+function ellipse(x,y,rx,ry,color,stroke="#ffffff66",lw=3){
+ c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);
+ c.fillStyle=color;c.fill();
+ if(stroke){c.strokeStyle=stroke;c.lineWidth=lw;c.stroke()}
+}
+function round(x,y,w,h,r,colors,stroke){
+ c.beginPath();c.roundRect(x,y,w,h,r);
+ c.fillStyle=Array.isArray(colors)?gradient(x,y,0,h,colors):colors;
+ c.fill();
+ if(stroke){c.strokeStyle=stroke;c.lineWidth=4;c.stroke()}
+}
+function path(points,color,stroke="#ffffff55",lw=3){
+ c.beginPath();c.moveTo(...points[0]);
+ points.slice(1).forEach(p=>c.lineTo(...p));
+ c.closePath();c.fillStyle=color;c.fill();
+ if(stroke){c.strokeStyle=stroke;c.lineWidth=lw;c.stroke()}
+}
+function line(x1,y1,x2,y2,color,width=7){
+ c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);
+ c.strokeStyle=color;c.lineWidth=width;c.lineCap="round";c.stroke();
+}
+function glow(x,y,r,color="#ffffff"){
+ let g=c.createRadialGradient(x,y,0,x,y,r);
+ g.addColorStop(0,color);g.addColorStop(1,"transparent");
+ c.fillStyle=g;c.fillRect(x-r,y-r,r*2,r*2);
+}
+function sphere(x,y,r,colors){
+ let g=c.createRadialGradient(x-r*.35,y-r*.4,2,x,y,r);
+ colors.forEach((v,i)=>g.addColorStop(i/(colors.length-1),v));
+ ellipse(x,y,r,r,g,"#ffffff88",3);
+ glow(x-r*.3,y-r*.35,r*.38,"#ffffff77");
+}
+function sparkle(x,y,s,color="#fff2a1"){
+ c.save();c.translate(x,y);c.fillStyle=color;
+ c.beginPath();c.moveTo(0,-s);c.quadraticCurveTo(s*.2,-s*.2,s,0);
+ c.quadraticCurveTo(s*.2,s*.2,0,s);
+ c.quadraticCurveTo(-s*.2,s*.2,-s,0);
+ c.quadraticCurveTo(-s*.2,-s*.2,0,-s);
+ c.fill();c.restore();
+}
+function ground(){
+ ellipse(128,220,105,17,"#00000035",null);
+}
+
+function person(female=false,coat="#2466a8"){
+ ground();
+ round(52,202,52,24,10,["#66788a","#17253c"]);
+ round(151,202,52,24,10,["#66788a","#17253c"]);
+ round(65,151,37,58,12,["#496b9d","#172b4b"]);
+ round(154,151,37,58,12,["#496b9d","#172b4b"]);
+ round(48,78,160,105,35,["#ffffff",coat,"#142c59"],"#ffffff99");
+ round(27,94,35,86,16,["#fff1cf",coat]);
+ round(194,94,35,86,16,["#fff1cf",coat]);
+ sphere(43,181,13,["#ffe2bc","#c9825d","#79432f"]);
+ sphere(211,181,13,["#ffe2bc","#c9825d","#79432f"]);
+ round(105,55,48,35,12,["#f6c99d","#b97854"]);
+ sphere(128,48,49,["#ffe5c7","#d89b72","#92563c"]);
+ if(female){
+  path([[80,38],[84,5],[110,-2],[148,-2],[175,28],[183,119],[160,153],[128,165],[95,145],[72,100]],
+   gradient(80,0,95,150,["#b5e4f3","#347da9","#153e70"]));
+  path([[96,27],[110,8],[145,8],[162,29],[157,91],[128,119],[99,90]],"#e9bd98");
+ }else{
+  ellipse(128,9,48,18,gradient(80,-8,95,28,["#ffffff","#b9c7d8"]));
+ }
+ ellipse(111,48,4,5,"#34251e",null);
+ ellipse(146,48,4,5,"#34251e",null);
+ line(119,70,138,70,"#9c4f48",3);
+}
+function tree(type=0){
+ ground();
+ round(111,104,35,125,10,["#d79a5b","#74401f","#42200e"]);
+ if(type===0){
+  sphere(128,62,78,["#c4ff9a","#49bd62","#11633c"]);
+  sphere(75,103,48,["#a5e66b","#318b43","#14502e"]);
+  sphere(181,103,48,["#a5e66b","#318b43","#14502e"]);
+ }else{
+  for(let i=0;i<7;i++)
+   sphere(65+(i%3)*60,35+Math.floor(i/3)*48,42,
+   ["#c7f58c","#4eaa49","#155d34"]);
+ }
+}
+function bottle(color){
+ ground();
+ round(91,69,74,145,17,["#ffffffcc",color,"#06436e"],"#ffffffcc");
+ round(109,39,38,42,7,["#ffffffcc",color]);
+ round(105,26,46,18,5,["#ffe98a","#b17b24"]);
+ round(103,91,8,92,3,["#ffffffaa"]);
+ sparkle(167,91,12);
+}
+function can(color){
+ ground();
+ round(75,65,106,150,18,["#f5fbff",color,"#273b5b"],"#ffffffcc");
+ ellipse(128,68,52,12,"#eaf6ff","#ffffff",3);
+ ellipse(128,213,52,12,"#8396a9","#ffffff",3);
+ round(91,103,74,58,10,["#ffffffaa",color]);
+ sparkle(165,95,11);
+}
+function rock(){
+ ground();
+ path([[38,197],[52,117],[93,67],[153,56],[208,119],[220,196]],
+ gradient(40,55,180,150,["#e4edf3","#8294a4","#35455b"]));
+ path([[55,130],[97,83],[123,120],[100,151]],"#ffffff44",null);
+}
+function thorn(){
+ ground();
+ for(let i=0;i<5;i++){
+  let xx=32+i*43;
+  path([[xx-25,210],[xx,95+(i%2)*20],[xx+27,210]],
+   gradient(xx,90,0,120,["#b5ec65","#287b3c","#124324"]));
+  line(xx-8,165,xx-28,146,"#b9ed70",5);
+ }
+}
+function log(){
+ ground();
+ c.save();c.translate(128,145);c.rotate(-.08);
+ round(-104,-32,208,65,28,["#e5b47b","#975427","#4d2917"],"#f5d4a1");
+ ellipse(-92,0,19,32,"#b97843","#f4c58d",4);
+ ellipse(92,0,19,32,"#b97843","#f4c58d",4);
+ c.restore();
+}
+function crate(){
+ ground();
+ round(48,66,160,145,9,["#e9b979","#a96a32","#5a351b"],"#f4d39c");
+ line(55,73,201,205,"#f5d29b",12);
+ line(201,73,55,205,"#f5d29b",12);
+}
+function bin(){
+ ground();
+ round(48,91,160,128,18,["#8be1f2","#1979a7","#10466f"],"#b9f4ff");
+ round(38,76,180,27,10,["#d4faff","#4ca4c7"]);
+ round(79,119,98,65,12,["#0e4567","#092f50"]);
+}
+function car(){
+ ground();
+ ellipse(128,194,112,19,"#00000044",null);
+ round(25,105,207,83,23,["#ffda76","#e87531","#8c3024"],"#ffe8ad");
+ path([[62,108],[91,57],[163,57],[199,108]],
+ gradient(60,55,140,55,["#d7f6ff","#4289b5","#163b61"]));
+ sphere(75,190,24,["#d7e5f3","#53657a","#172337"]);
+ sphere(186,190,24,["#d7e5f3","#53657a","#172337"]);
+}
+function platform(){
+ round(20,145,240-24,57,12,["#c9f0a0","#579b4b","#24532c"],"#dfffba");
+ round(20,139,216,17,7,["#efffc8","#9edb74"]);
+}
+function rabbit(){
+ ground();
+ ellipse(128,150,63,54,"#ffffff");
+ ellipse(94,63,19,63,"#ffffff");
+ ellipse(160,63,19,63,"#ffffff");
+ ellipse(94,60,8,43,"#f2a9bd",null);
+ ellipse(160,60,8,43,"#f2a9bd",null);
+ sphere(128,137,49,["#ffffff","#c9d2dc"]);
+ ellipse(111,132,5,7,"#202b3c",null);
+ ellipse(145,132,5,7,"#202b3c",null);
+ sphere(128,151,8,["#ffb7c7","#d86c86"]);
+}
+function cat(){
+ ground();
+ ellipse(128,159,65,52,["#ffdca2","#b87940"]);
+ path([[77,117],[78,60],[119,95]],"#d59b60");
+ path([[137,95],[180,60],[178,117]],"#d59b60");
+ ellipse(109,148,5,7,"#26313c",null);
+ ellipse(147,148,5,7,"#26313c",null);
+ line(118,171,137,171,"#79412f",3);
+}
+function bird(){
+ ground();
+ sphere(128,143,54,["#fff4b4","#e8a62b","#9c4b1c"]);
+ path([[151,125],[218,96],[178,155]],"#25a8b9");
+ path([[88,115],[34,76],[79,151]],"#2782a0");
+ sphere(143,128,7,["#fff","#25334a"]);
+}
+function diamond(){
+ ground();
+ path([[128,30],[198,100],[128,220],[58,100]],
+ gradient(58,30,140,190,["#ffffff","#73f1ff","#2377dc","#173b9a"]),"#ffffff",5);
+ path([[128,30],[128,220],[58,100]],"#ffffff55",null);
+ sparkle(105,93,18);
+}
+function balloon(color){
+ ground();line(128,150,128,225,"#e8e8e8",3);
+ sphere(128,105,65,["#ffffff",color,"#713b9b"]);
+}
+function bucket(){
+ ground();
+ path([[65,82],[191,82],[174,213],[82,213]],
+ gradient(65,80,115,130,["#d7f3ff","#4b91bd","#164e76"]));
+ c.beginPath();c.arc(128,91,63,Math.PI,0);
+ c.strokeStyle="#c9e8fa";c.lineWidth=9;c.stroke();
+}
+function flower(){
+ ground();line(128,119,128,224,"#287d3d",9);
+ for(let i=0;i<6;i++){
+  let a=i*Math.PI/3;
+  sphere(128+Math.cos(a)*35,96+Math.sin(a)*35,22,
+  ["#fff6ce","#f68eb9","#b52e6c"]);
+ }
+ sphere(128,96,15,["#fff6a6","#f0ad23","#96500e"]);
+}
+function mango(){
+ ground();sphere(128,130,53,["#fff1a2","#ffbd24","#df5c12"]);
+ line(128,77,137,55,"#684221",8);
+ ellipse(151,61,24,12,"#4f9e46");
+}
+function nest(){
+ ground();ellipse(128,169,88,35,["#c58c4b","#6c3c1f"]);
+ for(let i=0;i<5;i++)line(55+i*32,145,75+i*25,193,"#e2b47b",8);
+ sphere(128,125,30,["#fff0b8","#d7a94c","#8b5b24"]);
+}
+function bridge(){
+ round(12,155,232,43,8,["#e2bc7d","#98602e","#4c321e"]);
+ for(let i=0;i<5;i++)round(24+i*44,143,35,60,5,["#e9c58a","#87532b"]);
+}
+function water(){
+ c.fillStyle=gradient(0,60,0,160,["#c9faff","#36b9e2","#1264ad"]);
+ c.fillRect(0,100,256,156);
+ for(let i=0;i<5;i++){
+  c.beginPath();c.ellipse(i*65,155+i%2*28,52,9,0,0,Math.PI*2);
+  c.strokeStyle="#d8fbff99";c.lineWidth=5;c.stroke();
+ }
+}
+function fire(){
+ for(let i=0;i<4;i++){
+  path([[65+i*38,220],[45+i*38,142],[82+i*38,73],[99+i*38,145],[118+i*38,220]],
+   gradient(45+i*38,73,70,147,["#fff7a4","#ffb12d","#ed4c20"]));
+ }
+}
+function cloud(){
+ for(let i=0;i<4;i++)sphere(60+i*42,130-(i%2)*20,48,["#ffffff","#d5e9f4"]);
+}
+function star(){
+ path([[128,30],[150,96],[220,96],[164,137],[185,210],[128,167],[71,210],[92,137],[36,96],[106,96]],
+ gradient(36,30,184,180,["#fff9b2","#ffce3d","#c47b13"]),"#fff4b2",5);
+}
+function sign(){
+ round(35,75,186,112,12,["#e9c68d","#8a572d","#442914"]);
+ round(48,89,160,82,7,["#fff2c9","#dba85b"]);
+}
+function umbrella(){
+ ground();line(128,105,128,230,"#81532e",9);
+ c.beginPath();c.arc(128,120,100,Math.PI,0);
+ c.lineTo(228,120);c.quadraticCurveTo(178,175,128,120);
+ c.quadraticCurveTo(78,175,28,120);c.closePath();
+ c.fillStyle=gradient(28,25,192,125,["#ffef9d","#ee8d39","#a83d68"]);c.fill();
+}
+function basket(){
+ ground();
+ path([[53,112],[203,112],[184,215],[73,215]],
+ gradient(53,110,127,105,["#e5bd7a","#a16a36","#68401e"]));
+ for(let i=0;i<4;i++)line(72+i*36,120,80+i*30,207,"#f1d09b",7);
+}
+function fence(){
+ ground();
+ for(let i=0;i<4;i++)round(32+i*58,90,18,130,6,["#e5c38d","#99633d"]);
+ round(20,112,216,22,6,["#edcc9a","#96603a"]);
+ round(20,178,216,22,6,["#edcc9a","#96603a"]);
+}
+function background(type){
+ let colors=[
+ ["#8ce4ff","#d8f7ff","#a4d87b"],
+ ["#f9c56d","#e98b62","#7b507d"],
+ ["#9cddf6","#e9f9ff","#7cbd7a"],
+ ["#536e91","#9cc3d5","#426b66"]
+ ][type%4];
+ c.fillStyle=gradient(0,0,0,256,colors);
+ c.fillRect(0,0,256,256);
+ for(let i=0;i<5;i++)
+  ellipse(i*75-10,174-(i%2)*22,95,65,
+  ["#6fae76","#4e9464","#377b5a"][i%3],null);
+ ellipse(194,48,28,28,"#fff4bb",null);
+ for(let i=0;i<8;i++)sparkle((i*73)%256,(i*47)%140,5,"#ffffffaa");
+}
+function effect(){
+ for(let i=0;i<18;i++){
+  let a=i*Math.PI/9,r=35+(i%3)*25;
+  sparkle(128+Math.cos(a)*r,128+Math.sin(a)*r,8+(i%3)*4,
+  ["#fff5a0","#71eaff","#ff9ac8"][i%3]);
+ }
+}
+function npc(color){
+ person(false,color);
+}
+function createAssets(){
+ return [
+  ()=>person(false,"#2466a8"),
+  ()=>person(true,"#287fa0"),
+  ()=>person(false,"#26865c"),
+  ()=>person(true,"#8c55a8"),
+  ()=>npc("#bd7534"),
+  ()=>npc("#c36d70"),
+  ()=>npc("#477eaf"),
+  rabbit,cat,bird,
+  ()=>tree(0),()=>tree(1),
+  ()=>background(0),()=>background(1),()=>background(2),()=>background(3),
+  platform,fence,car,bin,crate,rock,thorn,log,
+  ()=>bottle("#21c7d8"),
+  ()=>bottle("#45d978"),
+  ()=>bottle("#f2b936"),
+  ()=>bottle("#d95ca9"),
+  ()=>can("#e74d3c"),
+  ()=>can("#3e9de0"),
+  ()=>can("#55b96a"),
+  ()=>can("#d9ad34"),
+  diamond,()=>{ground();sphere(128,128,65,["#fff9b5","#ffd23d","#a96809"]);},
+  ()=>balloon("#e84b65"),
+  ()=>balloon("#368de0"),
+  ()=>balloon("#5acb84"),
+  bucket,flower,mango,nest,bridge,water,fire,cloud,star,sign,umbrella,basket,
+  effect,
+  ()=>{sphere(128,128,70,["#fff9bd","#e8ae35","#97550d"]);},
+  ()=>{round(45,65,166,145,22,["#e5f4ff","#5594bd","#19476b"]);},
+  ()=>{sphere(128,128,75,["#ffdbb3","#c37b4f","#653a2d"]);},
+  ()=>{tree(0);for(let i=0;i<5;i++)sphere(70+i*28,140,13,["#fff2a0","#e5a82b"]);},
+  ()=>{rock();sparkle(130,90,15);},
+  ()=>{water();sparkle(70,140,12);},
+  ()=>{round(35,80,186,130,12,["#e8d6b6","#a2784b","#563a24"]);},
+  ()=>{sphere(128,128,75,["#ffffff","#c8d5e2","#71839a"]);},
+  ()=>{flower();sparkle(190,65,18);},
+  ()=>{diamond();sparkle(60,60,18);},
+  ()=>person(true,"#d26b82"),
+  ()=>person(false,"#d39b32"),
+  ()=>{basket();sphere(128,100,25,["#f9dd89","#e18d24"]);},
+  ()=>{crate();sparkle(128,40,15);},
+  ()=>{platform();sparkle(128,100,18);},
+  ()=>{umbrella();sparkle(128,45,16);},
+  ()=>{effect();sparkle(128,128,35);}
+ ];
+}
+const assets=createAssets();
+if(assets.length!==64)throw new Error("Atlas mesti mempunyai 64 aset.");
+
+function generate(){
+ c.clearRect(0,0,SIZE,SIZE);
+ assets.forEach((draw,i)=>{
+  const col=i%GRID,row=Math.floor(i/GRID);
+  c.save();
+  c.translate(col*CELL,row*CELL);
+  c.scale(2,2);
+  c.beginPath();c.rect(0,0,256,256);c.clip();
+  draw();
+  c.restore();
+ });
+}
+generate();
+
+const preview=document.getElementById("preview").getContext("2d");
+preview.drawImage(canvas,0,0,1024,1024);
+
+function download(){
+ const status=document.getElementById("status");
+ status.textContent="Sedang menghasilkan fail PNG 4K...";
+ canvas.toBlob(blob=>{
+  if(!blob){status.textContent="Gagal menghasilkan PNG.";return}
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download="game-assets.png";
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),10000);
+  status.textContent="Selesai! game-assets.png 4096 × 4096 telah dijana.";
+ },"image/png");
+}
+</script>
+</body>
+</html>
