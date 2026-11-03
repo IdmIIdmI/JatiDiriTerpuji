@@ -100,7 +100,7 @@ Object.keys(drawItem).forEach(n=>cell(n,drawItem[n]));cell('cloud',c=>{c.fillSty
 function drawSprite(n,x,y,w,h){let s=sprite[n];if(s)ctx.drawImage(atlas,s.x,s.y,s.w,s.h,x,y,w,h)}
 $('generateAssets').onclick=()=>atlas.toBlob(b=>{let u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='game-assets.png';a.click();setTimeout(()=>URL.revokeObjectURL(u),1500);toast('game-assets.png dijana')});
 let mission=+(localStorage.getItem('jt_mission')||0);mission=Math.max(0,Math.min(19,mission));let total=+(localStorage.getItem('jt_score')||0),done=JSON.parse(localStorage.getItem('jt_done')||'{}');
-let world=[],shots=[],particles=[],camera=0,worldW=5200,collected=0,toastTimer=0;
+let world=[],shots=[],particles=[],enemies=[],camera=0,worldW=5200,collected=0,toastTimer=0;
 const ground=()=>H-90,player={x:100,y:0,vx:0,vy:0,w:34,h:65,dir:1,onGround:false,jumps:0,duck:false,inv:0};
 let joystick=0,walkSound=0,audio=null,musicTimer=null,musicStep=0;
 function save(){localStorage.setItem('jt_mission',mission);localStorage.setItem('jt_score',total);localStorage.setItem('jt_done',JSON.stringify(done))}
@@ -115,6 +115,25 @@ const blueprints=[
 ['pit','rock','botol','log','bin','branch'],['tin','pit','car','rock','tin','thorn'],['crate','pit','rabbit','log','crate','rock'],['food','log','pit','npc','branch','food'],['gift','thorn','pit','npc','crate','gift'],['fish','rock','pit','cat','log','fish'],['coin','pit','crate','bin','branch','coin'],['balloon','branch','pit','npc','thorn','balloon'],['mango','log','pit','rock','tree','mango'],['wood','pit','log','rock','branch','wood'],['flower','pit','npc','thorn','log','flower'],['basket','rock','pit','npc','branch','basket'],['sign','pit','npc','log','sign','rock'],['float','pit','water','npc','branch','float'],['bird','pit','tree','crate','thorn','bird'],['bucket','fire','pit','rock','bucket','log'],['board','pit','gap','log','board','rock'],['bag','pit','crate','branch','npc','bag'],['blanket','pit','rock','snow','npc','blanket'],['supply','pit','crate','thorn','npc','supply']
 ];
 const uniqueItems={botol:'botol',tin:'tin',rabbit:'rabbit',food:'makanan',gift:'hadiah',fish:'ikan',coin:'syiling',balloon:'belon',mango:'mangga',wood:'kayu',flower:'bunga',basket:'bakul',sign:'petunjuk',float:'pelampung',bird:'burung',bucket:'baldi',board:'papan',bag:'beg',blanket:'selimut',supply:'bekalan'};
+function birdCountForMission(){
+ // Bilangan burung hitam (eko) mengikut julat misi:
+ // Misi 1-5: 5, 6-10: 8, 11-15: 10, 16-20: 15.
+ if(mission<5)return 5;
+ if(mission<10)return 8;
+ if(mission<15)return 10;
+ return 15;
+}
+function makeBirdEnemies(){
+ enemies=[];
+ const count=birdCountForMission();
+ for(let i=0;i<count;i++){
+  const x=420+(i+0.5)*(worldW-850)/count;
+  const y=ground()-105-(i%4)*38;
+  enemies.push({x,y,baseY:y,homeX:x,phase:i*1.7,
+   vx:(i%2===0?1:-1)*(1.15+(mission%4)*.12),w:43,h:31,
+   hitFlash:0});
+ }
+}
 function makeWorld(){world=[];shots=[];particles=[];camera=0;collected=0;worldW=5200;player.x=100;player.y=ground()-player.h;player.vx=player.vy=0;player.jumps=0;player.duck=false;player.inv=0;
 let plan=blueprints[mission];
 for(let i=0;i<plan.length;i++){let type=plan[i],x=520+i*760+(i%2)*70;
@@ -155,9 +174,26 @@ let bin=near.find(o=>o.type==='bin');if(bin){sfx('bin');toast('Tong diperiksa. T
 sfx('search');toast('Belum ada tindakan. Teruskan mencari.')}
 function rectHit(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
 function hurt(){if(player.inv>0)return;player.inv=90;total=Math.max(0,total-5);save();updateHUD();sfx('hurt');toast('Terkena halangan! -5 permata')}
+function birdHit(){
+ if(player.inv>0)return;
+ player.inv=90;
+ total=Math.max(0,total-3);
+ save();updateHUD();sfx('hurt');
+ toast('Dilanggari burung hitam! -3 markah');
+}
 function update(dt){if(!playing)return;let dir=joystick;player.vx=dir*1.45;if(dir)player.dir=dir>0?1:-1;player.x+=player.vx*dt;player.x=Math.max(0,Math.min(worldW-player.w,player.x));let oldY=player.y;player.vy+=.55*dt;player.y+=player.vy*dt;player.h=player.duck?37:65;let g=ground()-player.h;if(player.y>=g){player.y=g;player.vy=0;player.jumps=0;player.onGround=true}else player.onGround=false;if(player.inv>0)player.inv-=dt;
 for(let o of world){if(['rock','log','thorn','branch','fire'].includes(o.type)){let box={x:o.x,y:o.y,w:o.w,h:o.h},p={x:player.x+5,y:player.y+5,w:player.w-10,h:player.h-7};if(rectHit(p,box)){if(o.type==='thorn'||o.type==='fire'){hurt();player.x-=player.dir*10}else if(o.type==='branch'){if(!player.duck){player.x-=player.dir*3;player.vx=0}}else if(oldY+player.h<=o.y+12&&player.vy>=0){player.y=o.y-player.h;player.vy=0;player.jumps=0}else if(!player.duck)player.x-=player.dir*4}}
 if(o.type==='pit'&&player.x+player.w>o.x&&player.x<o.x+o.w&&player.y+player.h>=ground()-4){player.x=Math.max(50,o.x-46);player.y=ground()-player.h;player.vy=0;hurt()}}
+for(let b of enemies){
+ b.phase+=.045*dt;
+ b.x+=b.vx*dt;
+ if(b.x<b.homeX-125){b.x=b.homeX-125;b.vx=Math.abs(b.vx)}
+ if(b.x>b.homeX+125){b.x=b.homeX+125;b.vx=-Math.abs(b.vx)}
+ b.y=b.baseY+Math.sin(b.phase)*24;
+ const hitBox={x:b.x+5,y:b.y+5,w:b.w-10,h:b.h-10};
+ const playerBox={x:player.x+5,y:player.y+6,w:player.w-10,h:player.h-10};
+ if(rectHit(playerBox,hitBox)&&player.inv<=0)birdHit();
+}
 for(let s of shots){s.x+=s.vx*dt;s.life-=dt;for(let o of world)if(o.type==='crate'&&!o.broken&&s.x>o.x&&s.x<o.x+o.w&&s.y>o.y&&s.y<o.y+o.h){o.hp--;s.life=0;sfx('crack');addParticles(s.x,s.y,'#b87942');if(o.hp<=0){o.broken=true;if(o.rabbit)world.push({type:'rabbit',x:o.x+12,y:ground()-24,w:32,h:28,saved:false});toast(o.rabbit?'Peti pecah! Anak arnab ditemui.':'Peti kayu dipecahkan!')}break}}
 shots=shots.filter(s=>s.life>0);if(Math.abs(player.vx)>.1&&player.onGround){walkSound-=dt;if(walkSound<=0){sfx('step');walkSound=17}}
 for(let p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=.15*dt;p.life-=dt}particles=particles.filter(p=>p.life>0);camera=Math.max(0,Math.min(worldW-W,player.x-W*.75))}
@@ -171,6 +207,26 @@ if(o.type==='car')drawSprite('car',x,o.y-20,o.w,o.h+20);if(o.type==='bin')drawSp
 if(o.type==='item'&&!o.delivered&&(o.found||Math.abs(player.x-o.x)<145)){drawSprite(o.kind,x-13,o.y-25,56,56);if(!o.found){ctx.fillStyle='#fff';ctx.font='bold 17px Arial';ctx.fillText('?',x+10,o.y-8)}}
 if(o.type==='npc'){if(o.cat){drawSprite('rabbit',x-5,o.y-10,48,42)}else drawSprite(o.female?'woman':'man',x-10,o.y-12,62,70);if(!o.helped){ctx.fillStyle='#fff';ctx.font='bold 18px Arial';ctx.fillText('!',x+14,o.y-13)}}
 if(o.type==='rabbit'&&!o.saved)drawSprite('rabbit',x-12,o.y-24,54,52)}
+// Burung hitam musuh: siluet animasi mengepak, bergerak patrol di udara.
+for(let b of enemies){
+ let x=b.x-camera,y=b.y;
+ if(x<-90||x>W+90)continue;
+ ctx.save();ctx.translate(x+b.w/2,y+b.h/2);
+ if(b.vx<0)ctx.scale(-1,1);
+ const flap=Math.sin(b.phase*3)*9;
+ ctx.fillStyle='#111820';
+ // badan burung
+ ctx.beginPath();ctx.ellipse(0,2,17,10,-.08,0,Math.PI*2);ctx.fill();
+ // kepala dan paruh
+ ctx.beginPath();ctx.arc(13,-3,8,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle='#e6b638';ctx.beginPath();ctx.moveTo(19,-3);ctx.lineTo(28,0);ctx.lineTo(19,3);ctx.closePath();ctx.fill();
+ // sayap mengepak
+ ctx.fillStyle='#202a34';ctx.beginPath();ctx.moveTo(-2,0);ctx.quadraticCurveTo(-13,-13-flap,-25,-16-flap);ctx.quadraticCurveTo(-21,0,-5,8);ctx.closePath();ctx.fill();
+ ctx.beginPath();ctx.moveTo(-2,1);ctx.quadraticCurveTo(-13,12+flap,-24,15+flap);ctx.quadraticCurveTo(-20,2,-5,-7);ctx.closePath();ctx.fill();
+ ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(15,-5,2.1,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle='#d94b43';ctx.beginPath();ctx.arc(15,-5,1,0,Math.PI*2);ctx.fill();
+ ctx.restore();
+}
 ctx.fillStyle='#ffe56b';for(let s of shots){ctx.beginPath();ctx.arc(s.x-camera,s.y,5,0,7);ctx.fill()}for(let p of particles){ctx.globalAlpha=Math.max(0,p.life/35);ctx.fillStyle=p.color;ctx.fillRect(p.x-camera,p.y,5,5);ctx.globalAlpha=1}}
 function drawPlayer(){let x=player.x-camera,y=player.y;if(player.inv>0&&Math.floor(player.inv/6)%2===0)return;if(player.duck)drawSprite('hero',x-5,y-8,46,48);else drawSprite('hero',x-10,y-10,54,78);if(player.dir<0){ctx.save();ctx.translate(x*2+player.w,0);ctx.scale(-1,1);drawSprite('hero',x-10,y-10,54,78);ctx.restore()}}
 function render(){drawBackground();drawWorld();drawPlayer()}
