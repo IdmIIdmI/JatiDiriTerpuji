@@ -533,18 +533,18 @@ function addCrate(x){
 }
 
 /* BILANGAN MUSUH IKUT PERINGKAT MISI
-   MISI 1-4  : 5 MUSUH
-   MISI 5-9  : 10 MUSUH
-   MISI 10-14: 15 MUSUH
-   MISI 15-19: 20 MUSUH
-   MISI 20   : 25 MUSUH
+   MISI 1-4  : 10 MUSUH
+   MISI 5-9  : 15 MUSUH
+   MISI 10-14: 20 MUSUH
+   MISI 15-19: 25 MUSUH
+   MISI 20   : 30 MUSUH
 */
 function enemyCount(){
- if(mission<4)return 5;
- if(mission<9)return 10;
- if(mission<14)return 15;
- if(mission<19)return 20;
- return 25;
+ if(mission<4)return 10;
+ if(mission<9)return 15;
+ if(mission<14)return 20;
+ if(mission<19)return 25;
+ return 30;
 }
 
 function makeWorld(){
