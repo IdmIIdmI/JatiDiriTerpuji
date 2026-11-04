@@ -187,7 +187,7 @@ let musicTimer=null;
 let musicStep=0;
 let musicGain=null;
 
-const MOVE_SPEED=2.90;
+const MOVE_SPEED=2.85;
 const saveKey='JT2027_DATA';
 
 function resize(){
@@ -533,18 +533,18 @@ function addCrate(x){
 }
 
 /* BILANGAN MUSUH IKUT PERINGKAT MISI
-   MISI 1-4  : 10 MUSUH
-   MISI 5-9  : 15 MUSUH
-   MISI 10-14: 20 MUSUH
-   MISI 15-19: 25 MUSUH
-   MISI 20   : 30 MUSUH
+   MISI 1-4  : 5 MUSUH
+   MISI 5-9  : 10 MUSUH
+   MISI 10-14: 15 MUSUH
+   MISI 15-19: 20 MUSUH
+   MISI 20   : 25 MUSUH
 */
 function enemyCount(){
- if(mission<4)return 10;
- if(mission<9)return 15;
- if(mission<14)return 20;
- if(mission<19)return 25;
- return 30;
+ if(mission<4)return 5;
+ if(mission<9)return 10;
+ if(mission<14)return 15;
+ if(mission<19)return 20;
+ return 25;
 }
 
 function makeWorld(){
@@ -1354,133 +1354,44 @@ function drawEnemy(e){
 }
 
 /* LATAR PERMAINAN */
-function drawBackground(){/* =============================================
-   FUNGSI: LATAR BELAKANG BERBEZA IKUT MISI
-   ============================================= */
 function drawBackground(){
  let g=ctx.createLinearGradient(0,0,0,H);
-
- // ---------------- MISI 1-2: KAMPUNG HIJAU ----------------
- if(mission===0||mission===1){
-  g.addColorStop(0,'#87CEEB');      // Lang biru cerah
-  g.addColorStop(0.4,'#B2E2D5');
-  g.addColorStop(1,'#C8FFC8');      // Rumput hijau
- }
-
- // --------------- MISI 3-4: PANTAI BIRU -------------------
- else if(mission===2||mission===3){
-  g.addColorStop(0,'#4FC3F7');      // Lang biru terang
-  g.addColorStop(0.5,'#81D4FA');
-  g.addColorStop(1,'#E0F7FA');      // Pasir putih
- }
-
- // --------------- MISI 5-6: HUTAN BULUH ------------------
- else if(mission===4||mission===5){
-  g.addColorStop(0,'#795548');      // Lang coklat kabut
-  g.addColorStop(0.3,'#A5D6A7');
-  g.addColorStop(1,'#2E7D32');      // Hijau tua
- }
-
- // --------------- MISI 7-8: LEMBAH MANGGA ----------------
- else if(mission===6||mission===7){
-  g.addColorStop(0,'#FFCC80');      // Senja oren
-  g.addColorStop(0.5,'#FFE082');
-  g.addColorStop(1,'#AED581');      // Hijau muda
- }
-
- // --------------- MISI 9-10: TAMAN BUNGA -----------------
- else if(mission===8||mission===9){
-  g.addColorStop(0,'#FCE4EC');      // Lang merah jambu
-  g.addColorStop(0.5,'#F8BBD9');
-  g.addColorStop(1,'#C8E6C9');      // Hijau taman
- }
-
- // -------------- MISI 11-12: SUNGAI JERNIH ---------------
- else if(mission===10||mission===11){
-  g.addColorStop(0,'#81D4FA');      // Lang biru muda
-  g.addColorStop(0.5,'#4FC3F7');
-  g.addColorStop(1,'#B2DFDB');      // Biru kehijauan
- }
-
- // -------------- MISI 13-14: KAWASAN MASJID --------------
- else if(mission===12||mission===13){
-  g.addColorStop(0,'#BBDEFB');      // Lang biru lembut
-  g.addColorStop(0.5,'#E3F2FD');
-  g.addColorStop(1,'#C8E6C9');      // Hijau masjid
- }
-
- // -------------- MISI 15-16: TAMAN IMPIAN ----------------
- else if(mission===14||mission===15){
-  g.addColorStop(0,'#E1BEE7');      // Lang ungu muda
-  g.addColorStop(0.5,'#F3E5F5');
-  g.addColorStop(1,'#C5E1A5');      // Hijau cerah
- }
-
- // -------------- MISI 17-18: KEBUN BUAH ------------------
- else if(mission===16||mission===17){
-  g.addColorStop(0,'#FFB74D');      // Lang keemasan
-  g.addColorStop(0.5,'#FFCC80');
-  g.addColorStop(1,'#AED581');      // Hijau kebun
- }
-
- // -------------- MISI 19-20: DUNIA JATIDIRI --------------
- else {
-  g.addColorStop(0,'#1A237E');      // Lang malam bintang
-  g.addColorStop(0.5,'#303F9F');
-  g.addColorStop(1,'#1B5E20');      // Hijau pekat
- }
-
+ g.addColorStop(0,'#53c9e8');
+ g.addColorStop(1,'#d9fff0');
  ctx.fillStyle=g;
  ctx.fillRect(0,0,W,H);
 
- /* ---- MATAHARI / BULAN IKUT MISI ---- */
- if(mission<=15){
-  // MATAHARI untuk misi awal
-  ctx.fillStyle='#FFD700';
-  ctx.beginPath();
-  ctx.arc(W*.80,H*.15,40,0,Math.PI*2);
-  ctx.fill();
- }else{
-  // BULAN untuk misi akhir
-  ctx.fillStyle='#F5F5F5';
-  ctx.beginPath();
-  ctx.arc(W*.80,H*.15,35,0,Math.PI*2);
-  ctx.fill();
-  ctx.fillStyle='#1A237E';
-  ctx.beginPath();
-  ctx.arc(W*.83,H*.13,30,0,Math.PI*2);
-  ctx.fill();
- }
+ ctx.fillStyle='#fff4bd';
+ ctx.beginPath();
+ ctx.arc(W*.82,H*.18,35,0,Math.PI*2);
+ ctx.fill();
 
- /* ---- BUKIT IKUT LOKASI ---- */
+ /* BUKIT */
  ctx.fillStyle='#70bd72';
- if(mission===2||mission===3)ctx.fillStyle='#64B5F6';  // Pantai = bukit rendah
- if(mission>=16)ctx.fillStyle='#5D4037';                // Pergunungan = bukit batu
-
  ctx.beginPath();
  ctx.moveTo(0,ground());
+
  for(let x=0;x<=W;x+=12){
-  let h=100+Math.sin((x+camera*.15)/100)*40;
-  if(mission>=16)h=150+Math.sin((x+camera*.12)/80)*60;  // Bukit lebih tinggi
-  ctx.lineTo(x,ground()-h);
+  ctx.lineTo(
+   x,
+   ground()-100-Math.sin((x+camera*.15)/100)*40
+  );
  }
+
  ctx.lineTo(W,ground());
  ctx.fill();
 
- /* ---- TANAH ---- */
+ /* TANAH */
  ctx.fillStyle='#287c4b';
  ctx.fillRect(0,ground(),W,H-ground());
 
  ctx.fillStyle='#1c603b';
  ctx.fillRect(0,ground()+9,W,7);
 
- /* ---- NAMA LOKASI ---- */
  ctx.fillStyle='#fff';
  ctx.font='bold 15px Arial';
  ctx.textAlign='center';
  ctx.fillText(locations[mission],W/2,H*.22);
-}
-
 }
 
 /* LUKIS BARANG MISI MENGIKUT JENIS */
